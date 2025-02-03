@@ -85,6 +85,7 @@ jest.mock('@vultr/vultr-node', () => ({
 jest.mock('../common/utils', () => ({
   waitForSSH: jest.fn().mockResolvedValue(true),
   setupSSR: jest.fn().mockResolvedValue(true),
+  getSizeSpecs: jest.fn().mockReturnValue({ cpu: 2, memory: 2 }),
   getProviderConfig: jest.fn().mockReturnValue({
     AZURE_SUBSCRIPTION_ID: 'test-sub',
     AZURE_TENANT_ID: 'test-tenant',
@@ -99,7 +100,7 @@ describe('Cloud Provider Deployments', () => {
     provider: 'azure',
     region: 'test-region',
     size: 'small',
-    sshKey: 'test-key'
+    sshKey: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0 test@example.com'
   };
 
   beforeEach(() => {
@@ -157,8 +158,10 @@ describe('Cloud Provider Deployments', () => {
     it('should handle deployment failures', async () => {
       jest.spyOn(console, 'error').mockImplementation(() => {});
       const vultr = new VultrDeployment(vultrConfig);
-      jest.spyOn(vultr as any, 'client').mockImplementation(() => {
-        throw new Error('Deployment failed');
+      jest.spyOn(vultr as any, 'client').mockReturnValue({
+        instance: {
+          create: jest.fn().mockRejectedValue(new Error('Deployment failed'))
+        }
       });
       const result = await vultr.deploy();
       expect(result.success).toBe(false);
