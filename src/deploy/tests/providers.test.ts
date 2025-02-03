@@ -76,11 +76,13 @@ jest.mock('@google-cloud/compute', () => {
 });
 
 jest.mock('@vultr/vultr-node', () => ({
-  Vultr: jest.fn().mockImplementation(() => ({
-    instance: {
-      create: jest.fn().mockResolvedValue({ main_ip: '1.2.3.4' })
-    }
-  }))
+  default: {
+    Vultr: jest.fn().mockImplementation(() => ({
+      instance: {
+        create: jest.fn().mockResolvedValue({ main_ip: '1.2.3.4' })
+      }
+    }))
+  }
 }));
 jest.mock('../common/utils', () => ({
   waitForSSH: jest.fn().mockResolvedValue(true),
