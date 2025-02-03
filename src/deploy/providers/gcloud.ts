@@ -34,12 +34,11 @@ export class GCloudDeployment implements CloudProvider {
         metadata: {
           items: [{
             key: 'ssh-keys',
-            value: `root:${this.config.sshKey}`
+            value: `root:${this.config.sshKey || ''}`
           }]
         }
       });
 
-      await new Promise(resolve => setTimeout(resolve, 30000)); // Wait for VM to initialize
       const [metadata] = await vm.getMetadata();
       const networkInterfaces = metadata.networkInterfaces || [];
       const accessConfigs = networkInterfaces[0]?.accessConfigs || [];
@@ -49,12 +48,14 @@ export class GCloudDeployment implements CloudProvider {
         throw new Error('Failed to connect to VM');
       }
 
-      if (!(await setupSSR(ip))) {
+      const setupResult = await setupSSR(ip);
+      if (!setupResult) {
         throw new Error('Failed to setup SSR');
       }
 
       return { success: true, serverIp: ip };
     } catch (error: unknown) {
+      console.error('Google Cloud deployment failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       return { success: false, error: errorMessage };
     }

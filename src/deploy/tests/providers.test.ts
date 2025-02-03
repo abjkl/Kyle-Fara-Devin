@@ -25,28 +25,42 @@ const mockPublicIPAddresses = {
   get: jest.fn().mockResolvedValue({ ipAddress: '1.2.3.4' })
 };
 
+// Mock implementations
+const mockAzureVM = {
+  beginCreateOrUpdate: jest.fn().mockResolvedValue({}),
+  get: jest.fn().mockResolvedValue({})
+};
+
+const mockAzureNetwork = {
+  networkInterfaces: {
+    list: jest.fn().mockResolvedValue([{
+      ipConfigurations: [{
+        publicIPAddress: { id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Network/publicIPAddresses/test-ip' }
+      }]
+    }])
+  },
+  publicIPAddresses: {
+    get: jest.fn().mockResolvedValue({ ipAddress: '1.2.3.4' })
+  }
+};
+
+const mockGCloudVM = {
+  getMetadata: jest.fn().mockResolvedValue([{
+    networkInterfaces: [{
+      accessConfigs: [{ natIP: '1.2.3.4' }]
+    }]
+  }])
+};
+
+// Mock modules
 jest.mock('@azure/arm-compute', () => ({
   ComputeManagementClient: jest.fn().mockImplementation(() => ({
-    virtualMachines: {
-      beginCreateOrUpdate: jest.fn().mockResolvedValue({}),
-      get: jest.fn().mockResolvedValue({})
-    }
+    virtualMachines: mockAzureVM
   }))
 }));
 
 jest.mock('@azure/arm-network', () => ({
-  NetworkManagementClient: jest.fn().mockImplementation(() => ({
-    networkInterfaces: {
-      list: jest.fn().mockResolvedValue([{
-        ipConfigurations: [{
-          publicIPAddress: { id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Network/publicIPAddresses/test-ip' }
-        }]
-      }])
-    },
-    publicIPAddresses: {
-      get: jest.fn().mockResolvedValue({ ipAddress: '1.2.3.4' })
-    }
-  }))
+  NetworkManagementClient: jest.fn().mockImplementation(() => mockAzureNetwork)
 }));
 
 jest.mock('@azure/identity', () => ({
@@ -54,28 +68,20 @@ jest.mock('@azure/identity', () => ({
 }));
 
 jest.mock('@google-cloud/compute', () => {
-  const mockCompute = jest.fn().mockReturnValue({
+  return jest.fn().mockImplementation(() => ({
     zone: jest.fn().mockReturnValue({
-      createVM: jest.fn().mockResolvedValue([{
-        getMetadata: jest.fn().mockResolvedValue([{
-          networkInterfaces: [{
-            accessConfigs: [{ natIP: '1.2.3.4' }]
-          }]
-        }])
-      }])
+      createVM: jest.fn().mockResolvedValue([mockGCloudVM])
     })
-  });
-  return mockCompute;
+  }));
 });
 
-jest.mock('@vultr/vultr-node', () => {
-  const VultrMock = jest.fn().mockImplementation(() => ({
+jest.mock('@vultr/vultr-node', () => ({
+  Vultr: jest.fn().mockImplementation(() => ({
     instance: {
       create: jest.fn().mockResolvedValue({ main_ip: '1.2.3.4' })
     }
-  }));
-  return { default: { Vultr: VultrMock } };
-});
+  }))
+}));
 jest.mock('../common/utils', () => ({
   waitForSSH: jest.fn().mockResolvedValue(true),
   setupSSR: jest.fn().mockResolvedValue(true),
@@ -111,11 +117,7 @@ describe('Cloud Provider Deployments', () => {
     it('should handle deployment failures', async () => {
       jest.spyOn(console, 'error').mockImplementation(() => {});
       const azure = new AzureDeployment(testConfig);
-      jest.spyOn(azure as any, 'computeClient', 'get').mockReturnValue({
-        virtualMachines: {
-          beginCreateOrUpdate: jest.fn().mockRejectedValue(new Error('Deployment failed'))
-        }
-      });
+      mockAzureVM.beginCreateOrUpdate.mockRejectedValueOnce(new Error('Deployment failed'));
       const result = await azure.deploy();
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
@@ -135,11 +137,7 @@ describe('Cloud Provider Deployments', () => {
     it('should handle deployment failures', async () => {
       jest.spyOn(console, 'error').mockImplementation(() => {});
       const gcloud = new GCloudDeployment(gcloudConfig);
-      jest.spyOn(gcloud as any, 'compute', 'get').mockReturnValue({
-        zone: jest.fn().mockReturnValue({
-          createVM: jest.fn().mockRejectedValue(new Error('Deployment failed'))
-        })
-      });
+      mockGCloudVM.getMetadata.mockRejectedValueOnce(new Error('Deployment failed'));
       const result = await gcloud.deploy();
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();

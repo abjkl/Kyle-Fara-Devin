@@ -45,7 +45,7 @@ export class AzureDeployment implements AzureProvider {
               ssh: {
                 publicKeys: [{
                   path: '/home/azureuser/.ssh/authorized_keys',
-                  keyData: this.config.sshKey
+                  keyData: this.config.sshKey || ''
                 }]
               }
             }
@@ -64,7 +64,6 @@ export class AzureDeployment implements AzureProvider {
         }
       );
 
-      const vm = await this.computeClient.virtualMachines.get(resourceGroup, vmName);
       const networkInterfaces = await this.networkClient.networkInterfaces.list(resourceGroup);
       const interfaces = [];
       for await (const ni of networkInterfaces) {
@@ -83,12 +82,14 @@ export class AzureDeployment implements AzureProvider {
         throw new Error('Failed to connect to VM');
       }
 
-      if (!(await setupSSR(ip))) {
+      const setupResult = await setupSSR(ip);
+      if (!setupResult) {
         throw new Error('Failed to setup SSR');
       }
 
       return { success: true, serverIp: ip };
     } catch (error: unknown) {
+      console.error('Azure deployment failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       return { success: false, error: errorMessage };
     }
