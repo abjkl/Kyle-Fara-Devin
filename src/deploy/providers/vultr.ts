@@ -1,15 +1,15 @@
-const Vultr = require('@vultr/vultr-node');
+const { Vultr } = require('@vultr/vultr-node');
 import { CloudProvider, ServerConfig, DeploymentResult } from '../common/types';
 import { waitForSSH, setupSSR, getProviderConfig, getSizeSpecs } from '../common/utils';
 
 export class VultrDeployment implements CloudProvider {
-  private client: ReturnType<typeof Vultr>
+  private client: any;
   private config: ServerConfig;
 
   constructor(config: ServerConfig) {
     this.config = config;
     const { VULTR_API_KEY } = getProviderConfig();
-    this.client = new Vultr({ apiKey: VULTR_API_KEY });
+    this.client = new (Vultr as any)({ apiKey: VULTR_API_KEY });
   }
 
   async configure(): Promise<void> {
