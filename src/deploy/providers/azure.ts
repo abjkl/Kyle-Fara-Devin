@@ -1,5 +1,5 @@
-import { ComputeManagementClient, VirtualMachine } from '@azure/arm-compute';
-import { NetworkManagementClient, NetworkInterface, PublicIPAddress } from '@azure/arm-network';
+import { ComputeManagementClient } from '@azure/arm-compute';
+import { NetworkManagementClient } from '@azure/arm-network';
 import { DefaultAzureCredential } from '@azure/identity';
 import { AzureProvider, ServerConfig, DeploymentResult } from '../common/types';
 import { waitForSSH, setupSSR, getProviderConfig, getSizeSpecs } from '../common/utils';

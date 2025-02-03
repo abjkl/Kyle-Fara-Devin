@@ -3,7 +3,7 @@ import { CloudProvider, ServerConfig, DeploymentResult } from '../common/types';
 import { waitForSSH, setupSSR, getProviderConfig, getSizeSpecs } from '../common/utils';
 
 export class GCloudDeployment implements CloudProvider {
-  private compute: Compute;
+  private compute: InstanceType<typeof Compute>;
   private config: ServerConfig;
 
   constructor(config: ServerConfig) {
