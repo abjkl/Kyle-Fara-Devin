@@ -42,9 +42,8 @@ jest.mock('@azure/identity', () => ({
   DefaultAzureCredential: jest.fn()
 }));
 
-jest.mock('@google-cloud/compute', () => ({
-  __esModule: true,
-  default: jest.fn().mockImplementation(() => ({
+jest.mock('@google-cloud/compute', () => {
+  return jest.fn().mockImplementation(() => ({
     zone: jest.fn().mockReturnValue({
       createVM: jest.fn().mockResolvedValue([{
         getMetadata: jest.fn().mockResolvedValue([{
@@ -54,17 +53,17 @@ jest.mock('@google-cloud/compute', () => ({
         }])
       }])
     })
-  }))
-}));
+  }));
+});
 
-jest.mock('@vultr/vultr-node', () => ({
-  __esModule: true,
-  default: jest.fn().mockImplementation(() => ({
+jest.mock('@vultr/vultr-node', () => {
+  const Vultr = jest.fn().mockImplementation(() => ({
     instance: {
       create: jest.fn().mockResolvedValue({ main_ip: '1.2.3.4' })
     }
-  }))
-}));
+  }));
+  return { default: Vultr };
+});
 jest.mock('../common/utils', () => ({
   waitForSSH: jest.fn().mockResolvedValue(true),
   setupSSR: jest.fn().mockResolvedValue(true),
@@ -75,7 +74,17 @@ jest.mock('../common/utils', () => ({
     GOOGLE_APPLICATION_CREDENTIALS: 'test-creds',
     VULTR_API_KEY: 'test-key'
   }),
-  getSizeSpecs: jest.fn().mockReturnValue({ cpu: 1, memory: 1 })
+  getSizeSpecs: jest.fn().mockReturnValue({
+    cpu: 1,
+    memory: 1
+  }),
+  getProviderConfig: jest.fn().mockReturnValue({
+    AZURE_SUBSCRIPTION_ID: 'test-sub',
+    AZURE_TENANT_ID: 'test-tenant',
+    GOOGLE_CLOUD_PROJECT: 'test-project',
+    GOOGLE_APPLICATION_CREDENTIALS: 'test-creds',
+    VULTR_API_KEY: 'test-key'
+  })
 }));
 
 describe('Cloud Provider Deployments', () => {

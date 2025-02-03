@@ -1,9 +1,9 @@
-import { Compute } from '@google-cloud/compute';
+import Compute from '@google-cloud/compute';
 import { CloudProvider, ServerConfig, DeploymentResult } from '../common/types';
 import { waitForSSH, setupSSR, getProviderConfig, getSizeSpecs } from '../common/utils';
 
 export class GCloudDeployment implements CloudProvider {
-  private compute: Compute;
+  private compute: any; // TODO: Improve typing after initial tests pass
   private config: ServerConfig;
 
   constructor(config: ServerConfig) {
