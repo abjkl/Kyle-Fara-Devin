@@ -1,0 +1,31 @@
+{
+  "name": "ssr-deploy-docs",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "SSR deployment automation and documentation",
+  "scripts": {
+    "docs:dev": "vitepress dev src/docs",
+    "docs:build": "vitepress build src/docs",
+    "docs:preview": "vitepress preview src/docs",
+    "deploy": "ts-node src/deploy/index.ts",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "@azure/arm-compute": "^22.3.0",
+    "@azure/arm-network": "^33.5.0",
+    "@azure/identity": "^4.6.0",
+    "@google-cloud/compute": "^4.11.0",
+    "@vultr/vultr-node": "^2.8.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^20.10.5",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "vitepress": "^1.0.0-rc.31"
+  }
+}
