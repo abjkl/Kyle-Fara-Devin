@@ -1,6 +1,7 @@
 {
   "name": "ssr-deploy-docs",
   "version": "1.0.0",
+  "type": "module",
   "description": "SSR deployment automation and documentation",
   "scripts": {
     "docs:dev": "vitepress dev src/docs",

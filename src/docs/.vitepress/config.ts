@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitepress'
 
-export default defineConfig({
+const config = defineConfig({
   title: 'SSR Deployment Guide',
   description: 'Automated SSR server deployment guide and documentation',
   lang: 'en-US',
@@ -109,3 +109,5 @@ export default defineConfig({
     }
   }
 })
+
+export default config
