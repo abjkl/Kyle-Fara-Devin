@@ -1,0 +1,23 @@
+{
+  "name": "ssr-deploy-docs",
+  "version": "1.0.0",
+  "description": "SSR deployment automation and documentation",
+  "scripts": {
+    "docs:dev": "vitepress dev src/docs",
+    "docs:build": "vitepress build src/docs",
+    "docs:preview": "vitepress preview src/docs",
+    "deploy": "ts-node src/deploy/index.ts"
+  },
+  "dependencies": {
+    "@azure/arm-compute": "^21.2.0",
+    "@google-cloud/compute": "^4.1.0",
+    "@vultr/vultr-node": "^2.7.1",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "vitepress": "^1.0.0-rc.31"
+  }
+}
