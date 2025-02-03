@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress'
 
 const config = defineConfig({
+  base: '/',
   title: 'SSR Deployment Guide',
   description: 'Automated SSR server deployment guide and documentation',
   lang: 'en-US',
