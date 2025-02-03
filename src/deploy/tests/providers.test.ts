@@ -157,15 +157,17 @@ describe('Cloud Provider Deployments', () => {
 
     it('should handle deployment failures', async () => {
       jest.spyOn(console, 'error').mockImplementation(() => {});
-      const vultr = new VultrDeployment(vultrConfig);
-      jest.spyOn(vultr as any, 'client').mockReturnValue({
+      const mockError = new Error('Deployment failed');
+      const mockInitialize = jest.requireMock('@vultr/vultr-node').initialize;
+      mockInitialize.mockReturnValueOnce({
         instance: {
-          create: jest.fn().mockRejectedValue(new Error('Deployment failed'))
+          create: jest.fn().mockRejectedValue(mockError)
         }
       });
+      const vultr = new VultrDeployment(vultrConfig);
       const result = await vultr.deploy();
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.error).toBe(mockError.message);
     });
   });
 });
