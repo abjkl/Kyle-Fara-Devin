@@ -1,14 +1,16 @@
-import Compute from '@google-cloud/compute';
+import { Compute } from '@google-cloud/compute';
 import { CloudProvider, ServerConfig, DeploymentResult } from '../common/types';
 import { waitForSSH, setupSSR, getProviderConfig, getSizeSpecs } from '../common/utils';
 
 export class GCloudDeployment implements CloudProvider {
-  private compute: InstanceType<typeof Compute>;
+  private compute: Compute;
   private config: ServerConfig;
 
   constructor(config: ServerConfig) {
     this.config = config;
-    this.compute = new Compute();
+    this.compute = new Compute({
+      projectId: getProviderConfig().GOOGLE_CLOUD_PROJECT
+    });
   }
 
   async configure(): Promise<void> {

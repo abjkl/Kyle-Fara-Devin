@@ -3,11 +3,68 @@ import { GCloudDeployment } from '../providers/gcloud';
 import { VultrDeployment } from '../providers/vultr';
 import { ServerConfig } from '../common/types';
 
-jest.mock('@azure/arm-compute');
-jest.mock('@azure/arm-network');
-jest.mock('@azure/identity');
-jest.mock('@google-cloud/compute');
-jest.mock('@vultr/vultr-node');
+// Mock cloud provider modules
+const mockVirtualMachines = {
+  beginCreateOrUpdate: jest.fn().mockResolvedValue({}),
+  get: jest.fn().mockResolvedValue({})
+};
+
+const mockNetworkInterfaces = {
+  list: jest.fn().mockResolvedValue({
+    async *[Symbol.asyncIterator]() {
+      yield {
+        ipConfigurations: [{
+          publicIPAddress: { id: 'test-ip-id' }
+        }]
+      };
+    }
+  })
+};
+
+const mockPublicIPAddresses = {
+  get: jest.fn().mockResolvedValue({ ipAddress: '1.2.3.4' })
+};
+
+jest.mock('@azure/arm-compute', () => ({
+  ComputeManagementClient: jest.fn().mockImplementation(() => ({
+    virtualMachines: mockVirtualMachines
+  }))
+}));
+
+jest.mock('@azure/arm-network', () => ({
+  NetworkManagementClient: jest.fn().mockImplementation(() => ({
+    networkInterfaces: mockNetworkInterfaces,
+    publicIPAddresses: mockPublicIPAddresses
+  }))
+}));
+
+jest.mock('@azure/identity', () => ({
+  DefaultAzureCredential: jest.fn()
+}));
+
+jest.mock('@google-cloud/compute', () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(() => ({
+    zone: jest.fn().mockReturnValue({
+      createVM: jest.fn().mockResolvedValue([{
+        getMetadata: jest.fn().mockResolvedValue([{
+          networkInterfaces: [{
+            accessConfigs: [{ natIP: '1.2.3.4' }]
+          }]
+        }])
+      }])
+    })
+  }))
+}));
+
+jest.mock('@vultr/vultr-node', () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(() => ({
+    instance: {
+      create: jest.fn().mockResolvedValue({ main_ip: '1.2.3.4' })
+    }
+  }))
+}));
 jest.mock('../common/utils', () => ({
   waitForSSH: jest.fn().mockResolvedValue(true),
   setupSSR: jest.fn().mockResolvedValue(true),

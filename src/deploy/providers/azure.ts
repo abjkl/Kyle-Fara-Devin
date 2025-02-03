@@ -66,7 +66,11 @@ export class AzureDeployment implements AzureProvider {
 
       const vm = await this.computeClient.virtualMachines.get(resourceGroup, vmName);
       const networkInterfaces = await this.networkClient.networkInterfaces.list(resourceGroup);
-      const publicIpId = networkInterfaces[0]?.ipConfigurations[0]?.publicIPAddress?.id;
+      const interfaces = [];
+      for await (const ni of networkInterfaces) {
+        interfaces.push(ni);
+      }
+      const publicIpId = interfaces[0]?.ipConfigurations?.[0]?.publicIPAddress?.id;
       
       if (!publicIpId) {
         throw new Error('Failed to get public IP address');
