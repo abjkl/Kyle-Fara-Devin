@@ -102,8 +102,10 @@ export default defineConfig({
   ignoreDeadLinks: true,
 
   // Build optimizations
-  build: {
-    minify: true,
-    chunkSizeWarningLimit: 1000
+  vite: {
+    build: {
+      minify: true,
+      chunkSizeWarningLimit: 1000
+    }
   }
 })

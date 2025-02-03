@@ -1,17 +1,9 @@
-export interface CloudProvider {
-  deploy(): Promise<void>;
-  configure(): Promise<void>;
-  destroy(): Promise<void>;
-}
-
-export interface AzureProvider extends CloudProvider {
-  // Azure-specific methods will be added in step 005
-}
+export type ServerSize = 'small' | 'medium' | 'large';
 
 export interface ServerConfig {
   provider: 'azure' | 'gcloud' | 'vultr';
   region: string;
-  size: 'small' | 'medium' | 'large';
+  size: ServerSize;
   sshKey?: string;
 }
 
@@ -20,3 +12,13 @@ export interface DeploymentResult {
   serverIp?: string;
   error?: string;
 }
+
+export interface CloudProvider {
+  configure(): Promise<void>;
+  deploy(): Promise<DeploymentResult>;
+  destroy(): Promise<void>;
+}
+
+export interface AzureProvider extends CloudProvider {}
+export interface GCloudProvider extends CloudProvider {}
+export interface VultrProvider extends CloudProvider {}

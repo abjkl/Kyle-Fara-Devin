@@ -1,6 +1,6 @@
-import { ServerConfig, DeploymentResult } from './types';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { ServerSize, ServerConfig, DeploymentResult } from './types';
 
 const execAsync = promisify(exec);
 
@@ -16,13 +16,13 @@ export async function waitForSSH(ip: string, maxAttempts = 30): Promise<boolean>
   return false;
 }
 
-export function getSizeSpecs(size: string): { cpu: number; memory: number } {
-  const specs = {
+export function getSizeSpecs(size: ServerSize): { cpu: number; memory: number } {
+  const specs: Record<ServerSize, { cpu: number; memory: number }> = {
     small: { cpu: 1, memory: 1 },
     medium: { cpu: 2, memory: 2 },
     large: { cpu: 4, memory: 4 }
   };
-  return specs[size] || specs.small;
+  return specs[size];
 };
 
 export async function validateConfig(config: ServerConfig): Promise<boolean> {

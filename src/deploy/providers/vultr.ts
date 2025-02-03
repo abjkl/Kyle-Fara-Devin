@@ -1,15 +1,15 @@
-import { VultrClient } from '@vultr/vultr-node';
+const Vultr = require('@vultr/vultr-node');
 import { CloudProvider, ServerConfig, DeploymentResult } from '../common/types';
 import { waitForSSH, setupSSR, getProviderConfig, getSizeSpecs } from '../common/utils';
 
 export class VultrDeployment implements CloudProvider {
-  private client: VultrClient;
+  private client: ReturnType<typeof Vultr>
   private config: ServerConfig;
 
   constructor(config: ServerConfig) {
     this.config = config;
     const { VULTR_API_KEY } = getProviderConfig();
-    this.client = new VultrClient({ apiKey: VULTR_API_KEY });
+    this.client = new Vultr({ apiKey: VULTR_API_KEY });
   }
 
   async configure(): Promise<void> {
@@ -24,7 +24,7 @@ export class VultrDeployment implements CloudProvider {
       const specs = getSizeSpecs(this.config.size);
       const vmName = `ssr-${Date.now()}`;
       
-      const instance = await this.client.instances.createInstance({
+      const instance = await this.client.instance.create({
         region: this.config.region,
         plan: `vc2-${specs.cpu}c-${specs.memory}gb`,
         os_id: 387, // Ubuntu 20.04 x64
@@ -45,8 +45,9 @@ export class VultrDeployment implements CloudProvider {
       }
 
       return { success: true, serverIp: ip };
-    } catch (error) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      return { success: false, error: errorMessage };
     }
   }
 

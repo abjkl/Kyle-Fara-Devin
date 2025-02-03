@@ -1,17 +1,20 @@
-import { ComputeManagementClient } from '@azure/arm-compute';
+import { ComputeManagementClient, VirtualMachine } from '@azure/arm-compute';
+import { NetworkManagementClient, NetworkInterface, PublicIPAddress } from '@azure/arm-network';
 import { DefaultAzureCredential } from '@azure/identity';
 import { AzureProvider, ServerConfig, DeploymentResult } from '../common/types';
 import { waitForSSH, setupSSR, getProviderConfig, getSizeSpecs } from '../common/utils';
 
 export class AzureDeployment implements AzureProvider {
-  private client: ComputeManagementClient;
+  private computeClient: ComputeManagementClient;
+  private networkClient: NetworkManagementClient;
   private config: ServerConfig;
 
   constructor(config: ServerConfig) {
     this.config = config;
     const { AZURE_SUBSCRIPTION_ID } = getProviderConfig();
     const credentials = new DefaultAzureCredential();
-    this.client = new ComputeManagementClient(credentials, AZURE_SUBSCRIPTION_ID);
+    this.computeClient = new ComputeManagementClient(credentials, AZURE_SUBSCRIPTION_ID);
+    this.networkClient = new NetworkManagementClient(credentials, AZURE_SUBSCRIPTION_ID);
   }
 
   async configure(): Promise<void> {
@@ -27,7 +30,7 @@ export class AzureDeployment implements AzureProvider {
       const resourceGroup = 'ssr-resources';
       const specs = getSizeSpecs(this.config.size);
 
-      await this.client.virtualMachines.beginCreateOrUpdate(
+      await this.computeClient.virtualMachines.beginCreateOrUpdate(
         resourceGroup,
         vmName,
         {
@@ -61,8 +64,16 @@ export class AzureDeployment implements AzureProvider {
         }
       );
 
-      const vm = await this.client.virtualMachines.get(resourceGroup, vmName);
-      const ip = vm.publicIPAddress;
+      const vm = await this.computeClient.virtualMachines.get(resourceGroup, vmName);
+      const networkInterfaces = await this.networkClient.networkInterfaces.list(resourceGroup);
+      const publicIpId = networkInterfaces[0]?.ipConfigurations[0]?.publicIPAddress?.id;
+      
+      if (!publicIpId) {
+        throw new Error('Failed to get public IP address');
+      }
+      
+      const publicIp = await this.networkClient.publicIPAddresses.get(resourceGroup, publicIpId.split('/').pop()!);
+      const ip = publicIp.ipAddress;
 
       if (!ip || !(await waitForSSH(ip))) {
         throw new Error('Failed to connect to VM');
@@ -73,8 +84,9 @@ export class AzureDeployment implements AzureProvider {
       }
 
       return { success: true, serverIp: ip };
-    } catch (error) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      return { success: false, error: errorMessage };
     }
   }
 
