@@ -75,13 +75,13 @@ jest.mock('@google-cloud/compute', () => {
   }));
 });
 
-jest.mock('@vultr/vultr-node', () => {
-  return jest.fn().mockImplementation(() => ({
+jest.mock('@vultr/vultr-node', () => ({
+  initialize: jest.fn().mockReturnValue({
     instance: {
       create: jest.fn().mockResolvedValue({ main_ip: '1.2.3.4' })
     }
-  }));
-});
+  })
+}));
 jest.mock('../common/utils', () => ({
   waitForSSH: jest.fn().mockResolvedValue(true),
   setupSSR: jest.fn().mockResolvedValue(true),

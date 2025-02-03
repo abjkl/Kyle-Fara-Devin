@@ -1,4 +1,4 @@
-import VultrAPI from '@vultr/vultr-node';
+import { initialize } from '@vultr/vultr-node';
 import { CloudProvider, ServerConfig, DeploymentResult } from '../common/types';
 import { waitForSSH, setupSSR, getProviderConfig, getSizeSpecs } from '../common/utils';
 
@@ -9,7 +9,7 @@ export class VultrDeployment implements CloudProvider {
   constructor(config: ServerConfig) {
     this.config = config;
     const { VULTR_API_KEY } = getProviderConfig();
-    this.client = new VultrAPI({ apiKey: VULTR_API_KEY });
+    this.client = initialize({ apiKey: VULTR_API_KEY });
   }
 
   async configure(): Promise<void> {
