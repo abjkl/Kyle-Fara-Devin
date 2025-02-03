@@ -3,12 +3,12 @@ import { CloudProvider, ServerConfig, DeploymentResult } from '../common/types';
 import { waitForSSH, setupSSR, getProviderConfig, getSizeSpecs } from '../common/utils';
 
 export class GCloudDeployment implements CloudProvider {
-  private compute: any; // TODO: Improve typing after initial tests pass
+  private compute: any; // Using any temporarily to resolve typing issues
   private config: ServerConfig;
 
   constructor(config: ServerConfig) {
     this.config = config;
-    this.compute = new Compute({
+    this.compute = new (Compute as any)({
       projectId: getProviderConfig().GOOGLE_CLOUD_PROJECT
     });
   }
