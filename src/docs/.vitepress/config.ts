@@ -7,6 +7,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
+      { text: '指南', link: '/zh/guide/getting-started' },
     ],
 
     sidebar: {
@@ -32,17 +33,6 @@ export default defineConfig({
       ]
     },
 
-    localeLinks: [
-      {
-        text: 'English',
-        link: '/',
-      },
-      {
-        text: '中文',
-        link: '/zh/',
-      }
-    ],
-
     footer: {
       message: 'Released under the MIT License.',
       copyright: 'Copyright © 2024'
@@ -52,12 +42,22 @@ export default defineConfig({
   locales: {
     root: {
       label: 'English',
-      lang: 'en'
+      lang: 'en',
+      themeConfig: {
+        nav: [
+          { text: 'Guide', link: '/guide/getting-started' }
+        ]
+      }
     },
     zh: {
       label: '中文',
       lang: 'zh-CN',
-      link: '/zh/'
+      link: '/zh/',
+      themeConfig: {
+        nav: [
+          { text: '指南', link: '/zh/guide/getting-started' }
+        ]
+      }
     }
   }
 })
